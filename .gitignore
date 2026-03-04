@@ -1,0 +1,25 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+.ruff_cache/
+.pytest_cache/
+
+# Packaging/build artifacts
+*.egg-info/
+build/
+dist/
+pip-wheel-metadata/
+
+# Virtual environments
+.venv/
+venv/
+
+# Local runtime/test/demo data (not project source)
+fs/
+mnt/
+logs/
+runtime/
+demo/logs/
+
+# Local OS/editor noise
+.DS_Store
