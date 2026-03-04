@@ -16,9 +16,9 @@ pip install -e .
 2. Prepare one shared backing directory and at least two mountpoints:
 
 ```bash
-BACKING_DIR=/tmp/fake-nfs/backing
-MOUNT_BASE=/tmp/fake-nfs/mnt
-LOG_DIR=/tmp/fake-nfs/logs
+BACKING_DIR=/tmp/chaosfs/backing
+MOUNT_BASE=/tmp/chaosfs/mnt
+LOG_DIR=/tmp/chaosfs/logs
 
 mkdir -p "$BACKING_DIR" "$MOUNT_BASE/clientA" "$MOUNT_BASE/clientB" "$LOG_DIR"
 chaosfs mount "$BACKING_DIR" "$MOUNT_BASE/clientA" --client-id clientA --log-dir "$LOG_DIR" --background
@@ -39,7 +39,7 @@ Purpose:
 Command:
 
 ```bash
-MOUNT_BASE="$MOUNT_BASE" LOG_DIR=/tmp/fake-nfs/demo-logs bash demo/demo_race.sh
+MOUNT_BASE="$MOUNT_BASE" LOG_DIR=/tmp/chaosfs/demo-logs bash demo/demo_race.sh
 ```
 
 Expected behavior:

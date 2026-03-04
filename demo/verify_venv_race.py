@@ -96,7 +96,7 @@ def _run_venv(client_id: str, mount_point: str, target_rel: str, iteration: int)
     target = Path(mount_point) / target_rel
     target.parent.mkdir(parents=True, exist_ok=True)
     env = os.environ.copy()
-    env["CLIENT_ID"] = client_id
+    env["CHAOSFS_CLIENT_ID"] = client_id
     proc = subprocess.run(
         [sys.executable, "-m", "venv", "--clear", str(target)],
         capture_output=True,

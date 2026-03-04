@@ -1,6 +1,6 @@
-# FAKE_NFS chaos harness
+# ChaosFS
 
-FAKE_NFS is a local FUSE harness for reproducing NFS-style consistency issues without using production systems. It lets you mount multiple ChaosFS clients over one backing directory and inject delayed visibility, stale metadata/listing views, and operation failures so concurrent read/write workflows can be tested under realistic race conditions.
+ChaosFS is a local FUSE harness for reproducing NFS-style consistency issues without using production systems. It lets you mount multiple ChaosFS clients over one backing directory and inject delayed visibility, stale metadata/listing views, and operation failures so concurrent read/write workflows can be tested under realistic race conditions.
 
 ## Project layout
 
@@ -41,9 +41,9 @@ Create the backing and mount directories before calling `chaosfs mount`. The com
 Once you have a backing tree you care about, create one mountpoint per client:
 
 ```bash
-BACKING_DIR=/tmp/fake-nfs/backing
-MOUNT_BASE=/tmp/fake-nfs/mnt
-LOG_DIR=/tmp/fake-nfs/logs
+BACKING_DIR=/tmp/chaosfs/backing
+MOUNT_BASE=/tmp/chaosfs/mnt
+LOG_DIR=/tmp/chaosfs/logs
 
 mkdir -p "$BACKING_DIR" "$MOUNT_BASE" "$LOG_DIR"
 
@@ -75,12 +75,12 @@ chaosfs umount --mount "$MOUNT_BASE/clientA"
 
 | Env var | Default | Description |
 | --- | --- | --- |
-| `CHAOS_META_TTL_MS` | `1500` | Metadata and directory listing TTL per client. |
-| `CHAOS_WRITE_DELAY_MS` | `800` | How long writes take to become globally visible. |
-| `CHAOS_RENAME_DELAY_MS` | `1200` | Delay for rename/directory visibility and cache invalidation. |
-| `CHAOS_DROP_PROB` | `0.0` | Probability that each operation fails with `EIO`. |
-| `CHAOS_SEED` | unset | Seed for deterministic randomness. |
-| `CLIENT_ID` | `client` | Namespace used for per-client caches. |
+| `CHAOSFS_META_TTL_MS` | `1500` | Metadata and directory listing TTL per client. |
+| `CHAOSFS_WRITE_DELAY_MS` | `800` | How long writes take to become globally visible. |
+| `CHAOSFS_RENAME_DELAY_MS` | `1200` | Delay for rename/directory visibility and cache invalidation. |
+| `CHAOSFS_DROP_PROB` | `0.0` | Probability that each operation fails with `EIO`. |
+| `CHAOSFS_SEED` | unset | Seed for deterministic randomness. |
+| `CHAOSFS_CLIENT_ID` | `client` | Namespace used for per-client caches. |
 
 You can also provide these values as CLI flags (`--meta-ttl`, `--write-delay`, etc.) in milliseconds.
 
