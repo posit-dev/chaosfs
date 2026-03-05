@@ -226,11 +226,17 @@ class ChaosFS(LoggingMixIn, Operations):
             raise FuseOSError(exc.errno)
 
     def symlink(self, target: str, source: str) -> None:
+        # FUSE passes parameters in a confusing order:
+        # - target: the path where the symlink should be created
+        # - source: what the symlink should point to
+        # But os.symlink expects (what_to_point_to, where_to_create)
+        # So we need to swap them!
         self._maybe_drop()
-        self._record_meta_staleness(source, self.rename_delay)
-        self._record_dir_staleness(os.path.dirname(source) or "/", self.rename_delay)
+        self._record_meta_staleness(target, self.rename_delay)
+        self._record_dir_staleness(os.path.dirname(target) or "/", self.rename_delay)
         try:
-            os.symlink(target, self._full_path(source))
+            # Swap the parameters: os.symlink(src, dst) where src is what it points to
+            os.symlink(source, self._full_path(target))
         except OSError as exc:
             raise FuseOSError(exc.errno)
 
