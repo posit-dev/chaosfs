@@ -84,6 +84,35 @@ chaosfs umount --mount "$MOUNT_BASE/clientA"
 
 You can also provide these values as CLI flags (`--meta-ttl`, `--write-delay`, etc.) in milliseconds.
 
+## Using ChaosFS in tests
+
+ChaosFS provides context managers that handle all the FUSE mounting boilerplate:
+
+```python
+from chaosfs import mount, dual_mount
+
+def test_single_client(tmp_path):
+    backing = tmp_path / "backing"
+    mnt = tmp_path / "mnt"
+    backing.mkdir()
+    mnt.mkdir()
+
+    with mount(backing, mnt, client_id="c1", meta_ttl=0.5) as mp:
+        (mp / "hello.txt").write_text("world")
+    # automatically unmounted on exit
+
+def test_writer_reader(tmp_path):
+    with dual_mount(tmp_path) as (writer, reader):
+        (writer / "data.txt").write_text("content")
+        time.sleep(2.5)  # wait for reader TTL to expire
+        assert (reader / "data.txt").read_text() == "content"
+    # both mounts cleaned up
+```
+
+`mount()` takes the same chaos knobs as the CLI (in seconds, not milliseconds): `meta_ttl`, `write_delay`, `rename_delay`, `drop_prob`, `seed`, and `client_id`.
+
+`dual_mount(base_path)` creates `backing/`, `writer/`, and `reader/` subdirectories under `base_path` and mounts two ChaosFS instances — a writer with low delays and a reader with high metadata TTL — to simulate the common two-client NFS pattern.
+
 ## Demos & use cases
 
 See `demo/README.md` for the demo catalog, including a generic race visualizer and a concurrent-venv reproduction scenario.
