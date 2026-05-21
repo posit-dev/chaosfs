@@ -42,10 +42,15 @@ def mount(
         client_id=client_id,
     )
 
+    # direct_io=True disables the kernel page cache for this mount so every read
+    # syscall reaches ChaosFS. Without it, the kernel caches stale snapshots
+    # served during write_delay (e.g. the empty pre-write snapshot of a freshly
+    # created file) and keeps returning them forever, defeating the staleness
+    # model.
     fuse_thread = threading.Thread(
         target=FUSE,
         args=(chaos, str(mount_path)),
-        kwargs=dict(foreground=True, nothreads=True, allow_other=False),
+        kwargs=dict(foreground=True, nothreads=True, allow_other=False, direct_io=True),
         daemon=True,
     )
     fuse_thread.start()

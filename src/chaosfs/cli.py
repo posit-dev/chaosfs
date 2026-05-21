@@ -194,6 +194,11 @@ def mount_command(args: argparse.Namespace) -> None:
         drop_prob,
     )
     try:
+        # direct_io=True disables the kernel page cache for this mount so every
+        # read syscall reaches ChaosFS. Without it, the kernel caches stale
+        # snapshots served during write_delay (e.g. the empty pre-write snapshot
+        # of a freshly created file) and keeps returning them forever,
+        # defeating the staleness model.
         FUSE(
             chaos,
             str(mountpoint),
@@ -201,6 +206,7 @@ def mount_command(args: argparse.Namespace) -> None:
             nothreads=True,
             allow_other=False,
             debug=args.debug,
+            direct_io=True,
         )
     finally:
         if not args.background:

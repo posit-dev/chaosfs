@@ -185,6 +185,45 @@ class TestDualMount(unittest.TestCase):
             content = reader_file.read_text(encoding="utf-8")
             self.assertEqual(content, "shared data")
 
+    def test_writer_reads_own_write_after_write_delay(self) -> None:
+        """Writer must observe its own freshly-created file once write_delay elapses.
+
+        Regression: without direct_io on the FUSE mount, a read issued during
+        the write_delay window primes the kernel page cache with the empty
+        pre-write snapshot. After the snapshot expires inside ChaosFS, the
+        kernel keeps returning the cached empty bytes, so the writer never
+        sees its own freshly-created file.
+        """
+        from chaosfs import dual_mount
+
+        base_path = self.root / "test_base"
+        base_path.mkdir()
+
+        with dual_mount(base_path=str(base_path)) as (writer_path, reader_path):
+            (writer_path / "test.txt").write_text("hello world", encoding="utf-8")
+
+            # Read inside write_delay (0.1s) so any kernel-side cache is
+            # primed with the empty pre-write snapshot ChaosFS serves now.
+            self.assertEqual(
+                (writer_path / "test.txt").read_text(encoding="utf-8"),
+                "",
+            )
+
+            # Once write_delay elapses, the writer must observe its own write.
+            time.sleep(0.5)
+            self.assertEqual(
+                (writer_path / "test.txt").read_text(encoding="utf-8"),
+                "hello world",
+            )
+
+            # Sanity: the reader (higher write_delay + meta TTL) eventually
+            # converges on the same content too.
+            time.sleep(2.0)
+            self.assertEqual(
+                (reader_path / "test.txt").read_text(encoding="utf-8"),
+                "hello world",
+            )
+
     def test_dual_mount_cleanup_on_exception(self) -> None:
         """Like mount cleanup test but for dual_mount - both mounts cleaned up after exception."""
         from chaosfs import dual_mount
